@@ -65,7 +65,7 @@ function Dummy:init()
     ----------------------------------------------------------
     self.has_spells = true
     self:registerEnemySpell("pacify")
-    self:registerEnemySpell("esuna")
+    --self:registerEnemySpell("esuna")
     self:registerEnemySpell("heal_prayer")
     --self:registerEnemySpell("snowgrave")
 
@@ -113,5 +113,6 @@ function Dummy:onAct(battler, name)
     -- (this handles the Check act)
     return super.onAct(self, battler, name)
 end
+
 
 return Dummy
