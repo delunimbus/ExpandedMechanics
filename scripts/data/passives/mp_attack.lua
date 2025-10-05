@@ -39,10 +39,27 @@ function MPAttack:getAttackDamageMod(user)
     if isClass(user) and user:includes(PartyBattler)  then
         --print("jj")
         if user.chara:getPassivePaymentStatus() then
+            --print("jarjar")
             return 1.35
         else
             return 1
         end
+    end
+end
+
+function MPAttack:checkActivationConditionPaymentStatus(user)
+    if isClass(user) and user:includes(PartyBattler)  then
+        --print("hhhhooohhh")
+        print(user.chara:getMana())
+        --print(Utils.round(user.chara:getStat("mana") / 5))
+        --print(user.chara:getMana() >= Utils.round(user.chara:getStat("mana") / 5))
+        if user.chara:usesMana() and (user.chara:getMana() >= Utils.round(user.chara:getStat("mana") / 5)) then
+            print("hh")
+            return true
+        else
+            return false
+        end
+        --print("Payment status: "..tostring(user.chara.passive_paid))
     end
 end
 
@@ -53,15 +70,16 @@ function MPAttack:getMPCostAttack(user)
         --print(user.chara:getMana())
         --print(Utils.round(user.chara:getStat("mana") / 5))
         --print(user.chara:getMana() >= Utils.round(user.chara:getStat("mana") / 5))
-        if user.chara:usesMana() and (user.chara:getMana() >= Utils.round(user.chara:getStat("mana") / 5)) then
+        if self:checkActivationConditionPaymentStatus(user) then
+            --print("mamammia")
             mp_cost = Utils.round(user.chara:getStat("mana") / 5)
-            user.chara.passive_paid = true
-        else
-            user.chara.passive_paid = false
+
+        --else
+
         end
-        print(user.chara.passive_paid)
+        --print("Payment status: "..tostring(user.chara.passive_paid))
     end
-    --print(mp_cost.." attack mp cost")
+    print(mp_cost.." attack mp cost")
     return mp_cost
 end
 
