@@ -14,6 +14,7 @@
 ---@field activation_type string    What type of condition to check for the passive to activate
 ---
 ---@field usable boolean            Whether the passive can be activated
+---@field resources_to_use table       Whether the passive makes the user spend resources
 ---
 ---@field target string             The target mode of the passive - valid options are `"ally"`, `"party"`, `"enemy"`, `"enemies"`, and `"none"`
 ---
@@ -52,6 +53,7 @@ function Passive:init()
     self.activation_type = nil
 
     self.usable = true
+    self.resources_to_use = {}
 
     self.target = "none"
 
@@ -92,7 +94,7 @@ function Passive:getDescription() return self.description end
 ---@return string
 function Passive:getBattleDescription() return self.effect end
 
-
+function Passive:getResourcesToUse() return self.resources_to_use end
 
 function Passive:getStatBonuses() return self.bonuses end
 function Passive:getStatModifiers() return self.modifiers end
@@ -111,6 +113,11 @@ function Passive:getActivationConditionType() return self.activation_type end
 ---@param user PartyMember|EnemyBattler The battler the check is being run for
 ---@return boolean
 function Passive:isActive(user) return self.active end
+
+--- *(Override)* Check the activation condition for if the required cost of the passive was paid (if any).
+function Passive:checkActivationConditionPaymentStatus()
+    return false
+end
 
 --- *(Override)* Check the activation condition for the passive based on health.
 ---@param current_health    number The current health of the user.
@@ -194,6 +201,14 @@ function Passive:onSpellCast(user, target)
 
 end
 
+--- *(Override)* If the passive modifies damage dealt by the attack action, it aplies here.
+---@param user PartyBattler|EnemyBattler
+---@return number damage The multiplier of the damage value
+function Passive:getAttackDamageMod(user)
+    print("hello, oh no *BOOM*")
+    return 1
+end
+
 --- *(Override)* If the passive modifies MP cost, it applies its mod here.
 ---@param user PartyBattler|EnemyBattler
 ---@param cost number   The current MP cost
@@ -201,6 +216,13 @@ end
 ---@return number new_cost
 function Passive:applyMPMod(user, cost, resource)
     return cost
+end
+
+--- *(Override)* If the passive has the user spend MP for the attack action, it applies its mod here.
+---@param user PartyBattler|EnemyBattler
+---@return number new_cost
+function Passive:getMPCostAttack(user)
+    return 0
 end
 
 --- *(Override)* If the passive modifies HP cost, it applies its mod here.
