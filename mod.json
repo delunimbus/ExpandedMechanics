@@ -7,7 +7,7 @@
     "subtitle": "Proof of Concepts",
 
     // The version of your mod.
-    "version": "v0.8.1",
+    "version": "v0.8.1a",
     // What version of the engine your mod was made with.
     "engineVer": "v0.10.0-dev",
 
@@ -66,3 +66,4 @@
     }
 
 }
+
