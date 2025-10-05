@@ -36,7 +36,7 @@ function character:init()
     self.can_auto_regen_mana = true
     self.auto_mana_regen_flat_increase = 10
     self.auto_mana_regen_tp_scaling = 4
-    self.passive = "turbo_mp"
+    self.passive = "mp_attack"
     ---------------------------------
 
     -- Spells
