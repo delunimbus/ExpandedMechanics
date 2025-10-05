@@ -5,6 +5,7 @@
 ---@field actual_number_of_resources_depleted   integer         The actual number of resources depleted.
 ---@field spenders_to_refund                    table<string>   The spenders to refund when an aciton is canceled.
 ---@field party_lucky_evade                     boolean         Whether the party avoided a hit.
+---@field attack_spenders                       table<table>    Table of party members that spent resources attacking.
 ---@overload fun(...) : Battle
 local Battle, super = Class("Battle", true)
 
@@ -23,6 +24,8 @@ function Battle:init()
     self.spenders_to_refund = {}
 
     self.party_lucky_evade = false
+
+    self.attack_spenders = {}
 
 end
 
@@ -715,7 +718,8 @@ function Battle:processAction(action)
                 end
             end
 
-            local damage = Utils.round(enemy:getAttackDamage(action.damage or 0, battler, action.points or 0))
+            print(battler.chara:getPassive():getAttackDamageMod(battler))
+            local damage = Utils.round((enemy:getAttackDamage(action.damage or 0, battler, action.points or 0)) * battler.chara:getPassive():getAttackDamageMod(battler))
             if damage < 0 then
                 damage = 0
             end
@@ -1699,7 +1703,23 @@ function Battle:commitSingleAction(action)
             --print(chara)
         end
     end
-
+    ----------------------------------
+    if action.action == "ATTACK" then
+        if battler.chara:getPassive() then
+            if battler.chara:getPassive():getMPCostAttack(battler) > 0 then
+                battler.chara:setMana(battler.chara:getMana() - battler.chara:getPassive():getMPCostAttack(battler))
+                --print(battler.chara:getPassive():applyMPCostAttack(battler))
+                print("LABUBU")
+                local attack_spender = {
+                    ["spender"] = battler,
+                    ["mp_cost"] = battler.chara:getPassive():getMPCostAttack(battler)
+                }
+                table.insert(self.attack_spenders, attack_spender)
+                --print(self.attack_spenders[1].spender.chara.id)
+            end
+        end
+    end
+    ----------------------------------
     if action.action == "ITEM" and action.data then
         local result = action.data:onBattleSelect(battler, action.target)
         if result ~= false then
@@ -1815,8 +1835,16 @@ function Battle:removeSingleAction(action)
     battler:resetSprite()
 
     --for _,s in ipairs(action.spenders) do
-        print("YYYYYYYY")
+        --print("YYYYYYYY")
     --end
+
+    for attack_spender in pairs(self.attack_spenders) do
+        --print(attack_spender)
+        if self.attack_spenders[attack_spender].spender == battler then
+            battler.chara:setMana(battler.chara:getMana() + self.attack_spenders[attack_spender].mp_cost)
+            table.remove(self.attack_spenders, attack_spender)
+        end
+    end
 
     --print(battler.chara.resource_used .. "soos")
     if action.spenders ~= nil then
@@ -1831,28 +1859,28 @@ function Battle:removeSingleAction(action)
         end
     end
 
-        if action.mp and action.resource == "mana" then
-            if action.mp < 0 then
-                battler.chara:setMana(battler.chara:getMana() - action.mp)
-            elseif action.mp > 0 then
-                battler.chara:setMana(battler.chara:getMana() + action.mp)
-            end
+    if action.mp and action.resource == "mana" then
+        if action.mp < 0 then
+            battler.chara:setMana(battler.chara:getMana() - action.mp)
+        elseif action.mp > 0 then
+            battler.chara:setMana(battler.chara:getMana() + action.mp)
         end
+    end
 
-        if action.stock and action.resource == "stock" then
-            --print("huh?")
-            if action.action == "SPELL" then
-                battler.chara:addStock(action.data, 1)
-            end
+    if action.stock and action.resource == "stock" then
+        --print("huh?")
+        if action.action == "SPELL" then
+            battler.chara:addStock(action.data, 1)
         end
+    end
 
-        if action.hp_cost and action.resource == "health" then
-            if action.hp_cost < 0 then
-                battler.chara:heal(-action.hp_cost)
-            elseif action.hp_cost > 0 then
-                self:hurt(action.hp_cost, true, battler)
-            end
+    if action.hp_cost and action.resource == "health" then
+        if action.hp_cost < 0 then
+            battler.chara:heal(-action.hp_cost)
+        elseif action.hp_cost > 0 then
+            self:hurt(action.hp_cost, true, battler)
         end
+    end
 
     if action.action == "ITEM" and action.data then
         if action.item_index and action.consumed then
@@ -2367,6 +2395,7 @@ function Battle:updateTransitionOut()
 end
 
 -----------
+---(This was so hard to troubleshoot I don't even know if it works properly 100%)
 function Battle:updateSplitCost()
 
     for _,e in ipairs(self.enemies) do

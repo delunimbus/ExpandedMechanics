@@ -18,6 +18,7 @@
 ---
 ---@field passive string
 ---@field passive_active boolean
+---@field passive_paid boolean
 ---
 ---@field uses_mana boolean
 ---@field mana number
@@ -56,6 +57,7 @@ function PartyMember:init()
 
     self.passive = nil                          --The ID of the passive equipped (I don't know how to save classes)
     self.passive_active = true                  --Whether the passive is currently active
+    self.passive_paid = false                   --Whether the neccesary resources were paid to active the passive (if any).
 
     self.spell_stock_data = {}                  --The stock data for spells that use the "stock" resource
 
@@ -260,6 +262,8 @@ end
 
 function PartyMember:isPassiveActive() return self.passive_active end
 
+function PartyMember:getPassivePaymentStatus() return self.passive_paid end
+
 --- Checks for the required conditions for the passive to activate.
 ---@param passive Passive|string The passive to make the check for.
 function PartyMember:checkPassiveActivationCondition(passive)
@@ -345,6 +349,7 @@ function PartyMember:canEquip(passive)
         return passive:canEquip(self) or Mod:createPassive(passive):canEquip() or nil
     --end
 end
+
 
 --- Gets this party member's stat bonuses from a passive for a particular stat (bonus only)
 ---@param stat string

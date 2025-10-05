@@ -107,6 +107,11 @@ function DarkPowerMenu:onRemove(parent)
 end
 
 function DarkPowerMenu:update()
+    if Input.down("menu") then
+        self:showPassiveDescription(self:getPassive())
+    else
+        self:updateDescription()
+    end
     if self.state == "PARTY" then
         if Input.pressed("cancel") then
             self.ui_cancel_small:stop()
@@ -132,11 +137,6 @@ function DarkPowerMenu:update()
             end
         end
     elseif self.state == "SPELLS" then
-        if Input.down("menu") then
-            self:showPassiveDescription(self:getPassive())
-        else
-            self:updateDescription()
-        end
         if Input.pressed("cancel") then
             self.state = "PARTY"
 
