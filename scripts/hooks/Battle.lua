@@ -718,7 +718,7 @@ function Battle:processAction(action)
                 end
             end
 
-            print(battler.chara:getPassive():getAttackDamageMod(battler))
+            --print(battler.chara:getPassive():getAttackDamageMod(battler))
             local damage = Utils.round((enemy:getAttackDamage(action.damage or 0, battler, action.points or 0)) * battler.chara:getPassive():getAttackDamageMod(battler))
             if damage < 0 then
                 damage = 0
@@ -1706,17 +1706,22 @@ function Battle:commitSingleAction(action)
     ----------------------------------
     if action.action == "ATTACK" then
         if battler.chara:getPassive() then
-            if battler.chara:getPassive():getMPCostAttack(battler) > 0 then
-                battler.chara:setMana(battler.chara:getMana() - battler.chara:getPassive():getMPCostAttack(battler))
+            print("okkco")
+            --if battler.chara:getPassive():checkActivationConditionPaymentStatus(battler.chara) then
+            local mp_cost = battler.chara:getPassive():getMPCostAttack(battler)
+            if mp_cost > 0 then
+                battler.chara:setMana(battler.chara:getMana() - mp_cost)
                 --print(battler.chara:getPassive():applyMPCostAttack(battler))
                 print("LABUBU")
                 local attack_spender = {
                     ["spender"] = battler,
-                    ["mp_cost"] = battler.chara:getPassive():getMPCostAttack(battler)
+                    ["mp_cost"] = mp_cost
                 }
                 table.insert(self.attack_spenders, attack_spender)
                 --print(self.attack_spenders[1].spender.chara.id)
+                battler.chara.passive_paid = true
             end
+            print(mp_cost.." MP spent....")
         end
     end
     ----------------------------------
@@ -1838,11 +1843,11 @@ function Battle:removeSingleAction(action)
         --print("YYYYYYYY")
     --end
 
-    for attack_spender in pairs(self.attack_spenders) do
-        --print(attack_spender)
-        if self.attack_spenders[attack_spender].spender == battler then
-            battler.chara:setMana(battler.chara:getMana() + self.attack_spenders[attack_spender].mp_cost)
-            table.remove(self.attack_spenders, attack_spender)
+    for _,attack_spender in pairs(self.attack_spenders) do
+        print(attack_spender.spender.chara.id)
+        if attack_spender.spender == battler then
+            battler.chara:setMana(battler.chara:getMana() + attack_spender.mp_cost)
+            table.remove(self.attack_spenders, self.attack_spenders[attack_spender])
         end
     end
 
@@ -2344,6 +2349,7 @@ function Battle:nextTurn()
     self:updateSplitCost()
 
     self.spenders_to_refund = {}
+    self.attack_spenders = {}
     --print("iiii")
 
     --print(self.party[self.current_selecting].name)
@@ -2351,6 +2357,8 @@ function Battle:nextTurn()
     for _,battler in ipairs(self.party) do
 
         battler:checkHealth()       --Hopefully this doesn't mess up anything.
+
+        battler.chara.passive_paid = false
 
         if battler.chara:getManaMode() == "gotr" and self.turn_count == 1 then
             battler.chara:setMana(0)
