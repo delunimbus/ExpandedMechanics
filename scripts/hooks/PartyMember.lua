@@ -57,7 +57,7 @@ function PartyMember:init()
 
     self.passive = nil                          --The ID of the passive equipped (I don't know how to save classes)
     self.passive_active = true                  --Whether the passive is currently active
-    self.passive_paid = false                   --Whether the neccesary resources were paid to active the passive (if any).
+    self.passive_paid = false                    --Whether the neccesary resources were paid to active the passive (if any).
 
     self.spell_stock_data = {}                  --The stock data for spells that use the "stock" resource
 
